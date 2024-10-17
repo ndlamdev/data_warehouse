@@ -6,84 +6,175 @@ import os
 
 load_dotenv()
 
+css_selector_button_closed_pop_up = os.getenv('BUTTON_CLOSED_POP_UP_PRODUCT')
 css_selector_title = os.getenv("TITLE")
 css_selector_product_container = os.getenv("PRODUCT_CONTAINER")
-css_selector_description = os.getenv("DESCRIPTION_CONTAINER")
+css_selector_specifications = os.getenv("SPECIFICATIONS_CONTAINER")
 css_selector_colors = os.getenv('COLORS')
-css_selector_disks = os.getenv('DISKS')
+css_selector_desks = os.getenv('DESKS')
+css_selector_color_links = os.getenv('COLOR_LINKS')
+css_selector_desk_links = os.getenv('DESK_LINKS')
 css_selector_images = os.getenv('IMAGES')
 css_selector_price = os.getenv('PRICE')
+css_selector_status = os.getenv('STATUS')
 css_selector_discount = os.getenv('DISCOUNT')
-css_selector_show_more = os.getenv("SHOW_MORE_DESCRIPTION")
-css_selector_group_description = os.getenv("GROUP_DESCRIPTION")
-css_selector_name_group_description = os.getenv("NAME_GROUP_DESCRIPTION")
-css_selector_row_description = os.getenv("ROW_DESCRIPTION")
-css_selector_title_description = os.getenv("TITLE_DESCRIPTION")
-css_selector_value_description = os.getenv("VALUE_DESCRIPTION")
+css_selector_show_more = os.getenv("SHOW_MORE_SPECIFICATIONS")
+css_selector_group_specifications = os.getenv("GROUP_SPECIFICATIONS")
+css_selector_name_group_specifications = os.getenv("NAME_GROUP_SPECIFICATIONS")
+css_selector_row_specifications = os.getenv("ROW_SPECIFICATIONS")
+css_selector_title_specifications = os.getenv("TITLE_SPECIFICATIONS")
+css_selector_value_specifications = os.getenv("VALUE_SPECIFICATIONS")
 
 
 def crawl_data_product(driver, link):
     print("=" * 100)
+    dictionary = {'source': link, 'status': "success"}
+    driver.get(link)
     try:
-        driver.get(link)
+        get_elements(driver, css_selector_button_closed_pop_up).click()
+    except Exception:
+        pass
+
+    try:
         name = get_value(driver, css_selector_title)
         product = get_elements(driver, css_selector_product_container)
         print(name)
+        dictionary['name'] = name
     except NameError:
-        return
+        return {'source': link, 'status': "fail"}
 
-        # Lấy chiều cao của trang
     scroll_height = driver.execute_script("return document.body.scrollHeight")
-
-    # Thiết lập vị trí bắt đầu cuộn
     current_position = 0
-
-    # Đặt khoảng cách cuộn mỗi lần (ví dụ: 100 pixels)
     scroll_increment = 100
-
-    # Cuộn từ từ từ trên xuống dưới
     while current_position < scroll_height:
         driver.execute_script(f"window.scrollBy(0, {scroll_increment});")
-
-        # Tăng vị trí hiện tại
         current_position += scroll_increment
+        sleep(0.01)
+    sleep(2)
 
-        sleep(0.1)  # Bạn có thể điều chỉnh thời gian này cho phù hợp
-
-    colors = get_value(driver, css_selector_colors)
-    disks = get_value(driver, css_selector_disks)
-    print(f'Disk: {disks}')
-    print(f'Color: {colors}')
-
-    price = get_value(product, css_selector_price)
-    discount = get_value(product, css_selector_discount)
-    print(f'price: {price}')
-    print(f'discount: {discount}')
+    colors = get_value(product, css_selector_colors)
+    desks = get_value(product, css_selector_desks)
+    dictionary['desks'] = desks
+    dictionary['colors'] = colors
 
     images = get_value(product, css_selector_images)
-    for img in images:
-        print(img)
+    dictionary['images'] = images
 
     show_more = get_elements(product, css_selector_show_more)
     if show_more is not None:
         show_more.click()
         sleep(2)
 
-    group_descriptions = get_elements(product, css_selector_group_description)
-    if group_descriptions is None:
-        rows = get_elements(product, css_selector_row_description)
+    group_specificationss = get_elements(product, css_selector_group_specifications)
+    if group_specificationss is None:
+        rows = get_elements(product, css_selector_row_specifications)
         for row in rows:
-            title = get_value(row, css_selector_title_description)
-            value = get_value(row, css_selector_value_description)
+            title = get_value(row, css_selector_title_specifications)
+            value = get_value(row, css_selector_value_specifications)
             print(f'{title} | {value}')
         return
 
-    for group in group_descriptions:
+    technical = []
+    for group in group_specificationss:
+        group_technical = {}
         group.click()
-        name_group = get_value(group, css_selector_name_group_description)
-        print(f"Group description: {name_group}")
-        rows = get_elements(group, css_selector_row_description)
+        name_group = get_value(group, css_selector_name_group_specifications)
+        group_technical['name'] = name_group
+        rows = get_elements(group, css_selector_row_specifications)
+        data = {}
         for row in rows:
-            title = get_value(row, css_selector_title_description)
-            value = get_value(row, css_selector_value_description)
-            print(f'{title} | {value}')
+            title = get_value(row, css_selector_title_specifications)
+            value = get_value(row, css_selector_value_specifications)
+            data[title] = value
+
+        group_technical['data'] = data
+        technical.append(group_technical)
+
+    dictionary['specifications'] = technical
+
+    prices = []
+    price_obj = {}
+    if len(colors) != 0 and len(desks) != 0:
+        disk_links = get_value(product, css_selector_desk_links)
+        for index_desk in range(0, len(disk_links)):
+            disk_link = disk_links[index_desk]
+            driver.get(disk_link)
+            try:
+                get_elements(driver, css_selector_button_closed_pop_up).click()
+            except Exception:
+                pass
+            product = get_elements(driver, css_selector_product_container)
+            color_links = get_value(product, css_selector_color_links)
+            for index_color in range(0, len(color_links)):
+                color_link = color_links[index_color]
+                try:
+                    driver.get(color_link)
+                    try:
+                        get_elements(driver, css_selector_button_closed_pop_up).click()
+                    except Exception:
+                        pass
+                    product = get_elements(driver, css_selector_product_container)
+                    price = get_value(product, css_selector_price)
+                    discount = get_value(product, css_selector_discount)
+                    status = get_value(product, css_selector_status)
+                    price_obj['color'] = colors[index_desk]
+                    price_obj['desk'] = desks[index_desk]
+                    price_obj['price_base'] = price
+                    price_obj['discount'] = discount
+                    price_obj['status'] = status
+                    prices.append(price_obj)
+                except Exception:
+                    continue
+    elif len(colors) != 0 and len(desks) == 0:
+        color_links = get_value(product, css_selector_color_links)
+        for index_color in range(0, len(color_links)):
+            color_link = color_links[index_color]
+            try:
+                driver.get(color_link)
+                try:
+                    get_elements(driver, css_selector_button_closed_pop_up).click()
+                except Exception:
+                    pass
+                product = get_elements(driver, css_selector_product_container)
+                price = get_value(product, css_selector_price)
+                discount = get_value(product, css_selector_discount)
+                status = get_value(product, css_selector_status)
+                price_obj['color'] = colors[index_color]
+                price_obj['price_base'] = price
+                price_obj['discount'] = discount
+                price_obj['status'] = status
+                prices.append(price_obj)
+            except Exception:
+                continue
+    elif len(colors) == 0 and len(desks) != 0:
+        desk_links = get_value(product, css_selector_desk_links)
+        for index_desk in range(0, len(desk_links)):
+            desk_link = desk_links[index_desk]
+            try:
+                driver.get(desk_link)
+                try:
+                    get_elements(driver, css_selector_button_closed_pop_up).click()
+                except Exception:
+                    pass
+                product = get_elements(driver, css_selector_product_container)
+                price = get_value(product, css_selector_price)
+                discount = get_value(product, css_selector_discount)
+                status = get_value(product, css_selector_status)
+                price_obj['desk'] = desks[index_desk]
+                price_obj['price_base'] = price
+                price_obj['discount'] = discount
+                price_obj['status'] = status
+                prices.append(price_obj)
+            except Exception:
+                continue
+    else:
+        price = get_value(product, css_selector_price)
+        discount = get_value(product, css_selector_discount)
+        status = get_value(product, css_selector_status)
+        price_obj['price_base'] = price
+        price_obj['discount'] = discount
+        price_obj['status'] = status
+        prices.append(price_obj)
+
+    dictionary['prices'] = prices
+    return dictionary
