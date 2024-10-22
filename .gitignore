@@ -1,5 +1,6 @@
 /.venv/
 /.idea/
-/CrawlData/.env_the_gioi_di_dong
-/CrawlData/.env_cellphones
-/CrawlData/.env
+/crawl_data/data/
+/crawl_data/.env
+/crawl_data/cellphones.env
+/crawl_data/the_gioi_di_dong.env
