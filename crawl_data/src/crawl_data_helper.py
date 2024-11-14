@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 
+
 def split_group(group):
     return '; '.join([tag_a.text for tag_a in group.find_elements(By.CSS_SELECTOR, 'a')])
 
@@ -23,7 +24,7 @@ def get_value(driver, name=''):
 
         return driver.find_element(By.CSS_SELECTOR, name).text
     except Exception:
-        return ''
+        return ""
 
 
 def get_elements(driver, name):

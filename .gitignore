@@ -1,6 +1,2 @@
 /.venv/
-/.idea/
-/crawl_data/data/
-/crawl_data/.env
-/crawl_data/cellphones.env
-/crawl_data/the_gioi_di_dong.env
+/**/.idea/
