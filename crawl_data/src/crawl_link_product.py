@@ -17,7 +17,7 @@ def crawl_link(driver, config, limit_product=50):
 
         view_more = get_elements(driver, css_selector_view_more)
         if view_more is None or view_more.text == '':
-            break
+            return links
 
         try:
             driver.execute_script("arguments[0].scrollIntoView(true);", view_more)

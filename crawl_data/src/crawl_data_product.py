@@ -12,7 +12,6 @@ def crawl_data_product(driver, link, config_crawl_product):
     css_selector_images = config_crawl_product['images']
     css_selector_show_more = config_crawl_product['show_more_specifications']
     css_selector_group_specifications = config_crawl_product['group_specifications']
-    css_selector_name_group_specifications = config_crawl_product['name_group_specifications']
     css_selector_desk_links = config_crawl_product['desk_links']
     css_selector_color_links = config_crawl_product['color_links']
     css_selector_price = config_crawl_product['price']
@@ -123,7 +122,7 @@ def crawl_specification(container, specifications, config):
         specifications.append({title: value})
 
 
-def get_price(driver, link, collection, index, config):
+def     get_price(driver, link, collection, index, config):
     css_selector_button_closed_pop_up = config['button_close_pop_up']
     css_selector_product_container = config['product_container']
     css_selector_price = config['price']

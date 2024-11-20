@@ -2,7 +2,7 @@ DROP PROCEDURE IF EXISTS data_warehouse_control.PROCESS_DATA_TABLE_THE_GIOI_DI_D
 
 DELIMITER //
 
-CREATE PROCEDURE data_warehouse_control.PROCESS_DATA_TABLE_THE_GIOI_DI_DONG_TEMP()
+CREATE PROCEDURE data_warehouse_control.PROCESS_DATA_TABLE_THE_GIOI_DI_DONG_TEMP(in date DATE)
 BEGIN
     DECLARE done INT DEFAULT 0;
     DECLARE v_source TEXT character set utf8mb4 collate utf8mb4_general_ci;
@@ -18,9 +18,16 @@ BEGIN
     -- Xử lý lỗi khi không có dữ liệu
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
-    SET @date = DATE('2024-11-13');
+    IF date is null
+    THEN
+        SET date = CURDATE();
+    END IF;
 
-    UPDATE data_warehouse_control.file_logs SET status = 'DAILY_LOADING' where file_config_id = 2 and date = @date;
+    UPDATE data_warehouse_control.file_logs
+    SET status      = 'DAILY_LOADING',
+        date_update = now()
+    where file_config_id = 2
+      and date = date;
 
     -- Mở con trỏ
     OPEN cursor_data;
@@ -34,25 +41,25 @@ BEGIN
             LEAVE read_data;
         END IF;
 
-        UPDATE data_warehouse_staging.products_daily
+        UPDATE data_warehouse_staging.products_data_warehouse
         SET active = false
         WHERE source = v_source;
 
-        INSERT INTO data_warehouse_staging.products_daily (source, name, date, date_dim_id, active)
+        INSERT INTO data_warehouse_staging.products_data_warehouse (source, name, date, date_dim_id, active)
         SELECT t.source,
                t.name,
                t.date,
                dd.id,
                t.active
-        FROM (SELECT v_source AS source, v_name AS name, @date as date, true as active) AS t
+        FROM (SELECT v_source AS source, v_name AS name, date, true as active) AS t
                  JOIN
              data_warehouse_staging.date_dim dd ON dd.date = t.date;
 
         SET @product_id =
                 (select id
-                 from data_warehouse_staging.products_daily
-                 where source = v_source
-                   and date = @date
+                 from data_warehouse_staging.products_data_warehouse as pdw
+                 where pdw.source = v_source
+                   and pdw.date = date
                  limit 1);
         CALL data_warehouse_control.INSERT_PRICES(@product_id, v_prices);
         CALL data_warehouse_control.INSERT_IMAGES(@product_id, v_images);
@@ -63,7 +70,11 @@ BEGIN
     -- Đóng con trỏ
     CLOSE cursor_data;
 
-    UPDATE data_warehouse_control.file_logs SET status = 'DAILY_SUCCESS' where file_config_id = 2 and date = @date;
+    UPDATE data_warehouse_control.file_logs
+    SET status      = 'DAILY_SUCCESS',
+        date_update = now()
+    where file_config_id = 2
+      and date = date;
 
 END;
 

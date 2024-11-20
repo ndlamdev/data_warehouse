@@ -15,7 +15,10 @@ BEGIN
     SET data = REPLACE(data, '"', '');
     SET data = REPLACE(data, '\'', '"');
 
-    SET n = JSON_LENGTH(data);
+    IF JSON_VALID(data) = 1
+    THEN
+        SET n = JSON_LENGTH(data);
+    END IF;
 
     read_loop:
     WHILE i < n
@@ -82,7 +85,7 @@ BEGIN
         END WHILE;
     SET i = 0;
 
-    UPDATE data_warehouse_staging.products_daily
+    UPDATE data_warehouse_staging.products_data_warehouse
     SET before_camera    = before_camera_val,
         after_camera     = after_camera_val,
         battery_capacity = battery_capacity_val,

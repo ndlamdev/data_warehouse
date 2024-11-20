@@ -16,7 +16,12 @@ BEGIN
 
     SET data = REPLACE(data, '"', '');
     SET data = REPLACE(data, '\'', '"');
-    SET n = JSON_LENGTH(data);
+
+    IF JSON_VALID(data) = 1
+    THEN
+        SET n = JSON_LENGTH(data);
+    END IF;
+
 
     -- Lặp qua từng phần tử trong dữ liệu JSON
     WHILE i < n
@@ -63,7 +68,7 @@ BEGIN
                 SET discount_val = @TEMP;
             END IF;
 
-            IF price_base_val = 0 THEN
+            IF price_base_val = 0 AND (status_val is not null OR status_val != '') THEN
                 SET status_val = 'Hết hàng';
             END IF;
 

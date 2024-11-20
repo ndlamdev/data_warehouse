@@ -10,17 +10,20 @@ def get_value(driver, name=''):
         is_list = name[-2:]
         if is_list == '@s':
             name = name[:-2]
-            if name.endswith(']'):
-                att = name[name.index('[') + 1:len(name) - 1]
-                elements = driver.find_elements(By.CSS_SELECTOR, name[:name.index('[')])
-                result = [element.get_attribute(att) for element in elements]
-            else:
-                elements = driver.find_elements(By.CSS_SELECTOR, name)
-                result = [element.text for element in elements]
+            try:
+                if name.endswith(']'):
+                    att = name[name.index('[') + 1:len(name) - 1]
+                    elements = driver.find_elements(By.CSS_SELECTOR, name[:name.index('[')])
+                    result = [element.get_attribute(att) for element in elements]
+                else:
+                    elements = driver.find_elements(By.CSS_SELECTOR, name)
+                    result = [element.text for element in elements]
 
-            if len(result) == 1:
-                return result[0]
-            return result
+                if len(result) == 1:
+                    return result[0]
+                return result
+            except Exception:
+                return []
 
         return driver.find_element(By.CSS_SELECTOR, name).text
     except Exception:

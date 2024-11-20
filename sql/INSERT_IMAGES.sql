@@ -11,7 +11,11 @@ BEGIN
     SET data = REPLACE(REPLACE(REPLACE(data, 'NONE', '\'*\''), 'None', '\'*\''), '"', '');
     SET data = REPLACE(data, '\'', '"');
 
-    SET n = JSON_LENGTH(data);
+
+    IF JSON_VALID(data) = 1
+    THEN
+        SET n = JSON_LENGTH(data);
+    END IF;
 
     -- Lặp qua từng phần tử trong dữ liệu JSON
     WHILE i < n

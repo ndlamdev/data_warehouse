@@ -157,6 +157,7 @@ class DatabaseConnectHelper:
             print("Run sql successfully.")
         except Error as e:
             print(f"Failed to run sql from database: {e}")
+            raise e
         finally:
             cursor.close()
             connection.close()

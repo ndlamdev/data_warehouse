@@ -1,5 +1,8 @@
+DROP PROCEDURE IF EXISTS data_warehouse_control.LOAD_FILE;
 
-create procedure data_warehouse_control.LOAD_FILE(IN fileConfigId int)
+DELIMITER //
+
+CREATE PROCEDURE data_warehouse_control.LOAD_FILE(IN fileConfigId int, IN date date)
 BEGIN
     DECLARE v_database_staging VARCHAR(255);
     DECLARE v_table_temp VARCHAR(255);
@@ -9,6 +12,7 @@ BEGIN
     DECLARE v_status VARCHAR(50);
     DECLARE v_log_id int;
     DECLARE done INT DEFAULT FALSE;
+
     DECLARE cur CURSOR FOR
         SELECT configs.database_staging,
                configs.table_temp,
@@ -20,7 +24,7 @@ BEGIN
         FROM data_warehouse_control.file_configs as configs
                  JOIN data_warehouse_control.file_logs as logs on logs.file_config_id = configs.id
         WHERE configs.id = fileConfigId
-          and logs.date = CURDATE();
+          and ((date is null AND logs.date = CURDATE()) or logs.date = date);
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
     -- Mở CURSOR
@@ -36,9 +40,9 @@ BEGIN
             LEAVE read_loop;
         END IF;
 
-        -- Xử lý dữ liệu
         IF v_status = 'CRAWL_SUCCESS'
         THEN
+            -- Cập nhật trạng thái trong bảng file_logs
             SET @sql_write_log1 = CONCAT(
                     'UPDATE data_warehouse_control.file_logs SET date_update = NOW(), status = ''LOADING_FILE'' WHERE id = ',
                     v_log_id, ';');
@@ -66,4 +70,6 @@ BEGIN
     -- Đóng CURSOR sau khi sử dụng
     CLOSE cur;
 END;
+
+DELIMITER ;
 
