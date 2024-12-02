@@ -1,8 +1,8 @@
-DROP PROCEDURE IF EXISTS data_warehouse_control.INSERT_PRICES;
+DROP PROCEDURE IF EXISTS data_warehouse_control.INSERT_PRICES_FOR_CELLPHONES;
 
 DELIMITER //
 
-CREATE PROCEDURE data_warehouse_control.INSERT_PRICES(in product_id_val int, in data text)
+CREATE PROCEDURE data_warehouse_control.INSERT_PRICES_FOR_CELLPHONES(in product_id_val int, in data text)
 BEGIN
     DECLARE color_val VARCHAR(50) DEFAULT '';
     DECLARE price_base_val double DEFAULT 0;
@@ -42,12 +42,14 @@ BEGIN
                                                     ''), '*', ''), '"', ''), '₫', '');
             SET status_val = JSON_UNQUOTE(JSON_EXTRACT(data, CONCAT('$[', i, '].status')));
 
-            -- Kiểm tra giá trị của color_val, nếu là số thì đặt vào cột disk, nếu không là color
             IF color_val REGEXP '[0-9]' THEN
                 SET @temp = desk_val;
                 SET desk_val = color_val;
                 SET color_val = @temp;
             END IF;
+
+            SET color_val = COALESCE(color_val, '');
+            SET desk_val = COALESCE(desk_val, '');
 
             IF @discount_val_temp REGEXP '[0-9]' THEN
                 SET discount_val = cast(@discount_val_temp as double);
@@ -70,11 +72,13 @@ BEGIN
 
             IF price_base_val = 0 AND (status_val is not null OR status_val != '') THEN
                 SET status_val = 'Hết hàng';
+            ELSE
+                SET status_val = 'Còn hàng';
             END IF;
 
 
             -- Chèn vào bảng prices
-            INSERT INTO data_warehouse_staging.product_prices (product_id, color, desk, price_base, discount, status)
+            INSERT INTO data_warehouse_staging.product_cellphones_prices_staging (product_id, color, desk, price_base, discount, status)
             VALUES (product_id_val, color_val, desk_val, price_base_val, discount_val,
                     status_val);
 

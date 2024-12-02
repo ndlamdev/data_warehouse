@@ -1,8 +1,8 @@
-DROP PROCEDURE IF EXISTS data_warehouse_control.INSERT_IMAGES;
+DROP PROCEDURE IF EXISTS data_warehouse_control.INSERT_IMAGES_FOR_THE_GIOI_DI_DONG;
 
 DELIMITER //
 
-CREATE PROCEDURE data_warehouse_control.INSERT_IMAGES(in product_id_val int, in data text)
+CREATE PROCEDURE data_warehouse_control.INSERT_IMAGES_FOR_THE_GIOI_DI_DONG(in product_id_val int, in data text)
 BEGIN
     DECLARE image_val VARCHAR(255) DEFAULT '';
     DECLARE i INT DEFAULT 0;
@@ -23,12 +23,9 @@ BEGIN
             SET image_val = JSON_UNQUOTE(JSON_EXTRACT(data, CONCAT('$[', i, ']')));
 
             IF image_val != '*' THEN
-                INSERT INTO data_warehouse_staging.product_images (product_id, image_url)
+                INSERT INTO data_warehouse_staging.product_the_gioi_di_dong_images_staging(product_id, image_url)
                 VALUES (product_id_val, image_val);
             END IF;
-
-            INSERT INTO data_warehouse_staging.product_images (product_id, image_url)
-            VALUES (product_id_val, image_val);
 
             SET i = i + 1;
             SET image_val = '';

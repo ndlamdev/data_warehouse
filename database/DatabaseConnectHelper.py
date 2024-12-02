@@ -140,7 +140,7 @@ class DatabaseConnectHelper:
             return None
         except Error as e:
             print(f"Failed to call stored procedure: {e}")
-            return None
+            raise e
         finally:
             cursor.close()
             connection.close()

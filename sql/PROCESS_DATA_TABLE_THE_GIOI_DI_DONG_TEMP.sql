@@ -2,7 +2,7 @@ DROP PROCEDURE IF EXISTS data_warehouse_control.PROCESS_DATA_TABLE_THE_GIOI_DI_D
 
 DELIMITER //
 
-CREATE PROCEDURE data_warehouse_control.PROCESS_DATA_TABLE_THE_GIOI_DI_DONG_TEMP(in date DATE)
+CREATE PROCEDURE data_warehouse_control.PROCESS_DATA_TABLE_THE_GIOI_DI_DONG_TEMP(in v_date DATE)
 BEGIN
     DECLARE done INT DEFAULT 0;
     DECLARE v_source TEXT character set utf8mb4 collate utf8mb4_general_ci;
@@ -13,21 +13,27 @@ BEGIN
 
     -- Khai báo con trỏ để duyệt qua dữ liệu
     DECLARE cursor_data CURSOR FOR
-        SELECT source, name, images, specifications, prices FROM data_warehouse_staging.product_the_gioi_di_dong_temp;
+        SELECT source, name, images, specifications, prices FROM data_warehouse_staging.products_the_gioi_di_dong_temp;
 
     -- Xử lý lỗi khi không có dữ liệu
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
-    IF date is null
+    IF v_date is null
     THEN
-        SET date = CURDATE();
+        SET v_date = CURDATE();
     END IF;
 
     UPDATE data_warehouse_control.file_logs
-    SET status      = 'DAILY_LOADING',
+    SET status      = 'STAGING_PROCESS',
         date_update = now()
     where file_config_id = 2
-      and date = date;
+      and date = v_date;
+
+    TRUNCATE TABLE data_warehouse_staging.product_the_gioi_di_dong_prices_staging;
+    TRUNCATE TABLE data_warehouse_staging.product_the_gioi_di_dong_images_staging;
+    SET FOREIGN_KEY_CHECKS = 0;
+    TRUNCATE TABLE data_warehouse_staging.products_the_gioi_di_dong_staging;
+    SET FOREIGN_KEY_CHECKS = 1;
 
     -- Mở con trỏ
     OPEN cursor_data;
@@ -41,40 +47,35 @@ BEGIN
             LEAVE read_data;
         END IF;
 
-        UPDATE data_warehouse_staging.products_data_warehouse
-        SET active = false
-        WHERE source = v_source;
-
-        INSERT INTO data_warehouse_staging.products_data_warehouse (source, name, date, date_dim_id, active)
+        INSERT INTO data_warehouse_staging.products_the_gioi_di_dong_staging (source, name, date, date_dim_id)
         SELECT t.source,
                t.name,
-               t.date,
-               dd.id,
-               t.active
-        FROM (SELECT v_source AS source, v_name AS name, date, true as active) AS t
+               t.v_date,
+               dd.id
+        FROM (SELECT v_source AS source, v_name AS name, v_date) AS t
                  JOIN
-             data_warehouse_staging.date_dim dd ON dd.date = t.date;
+             data_warehouse_staging.date_dim dd ON dd.date = t.v_date;
 
-        SET @product_id =
-                (select id
-                 from data_warehouse_staging.products_data_warehouse as pdw
-                 where pdw.source = v_source
-                   and pdw.date = date
-                 limit 1);
-        CALL data_warehouse_control.INSERT_PRICES(@product_id, v_prices);
-        CALL data_warehouse_control.INSERT_IMAGES(@product_id, v_images);
-
-        CALL data_warehouse_control.INSERT_SPECIFICATION_TABLE_THE_GIOI_DI_DONG(@product_id, v_specifications);
+        select id
+        INTO @product_id
+        from data_warehouse_staging.products_the_gioi_di_dong_staging as pdw
+        where pdw.source = v_source
+          and pdw.date = v_date
+        limit 1;
+        
+        CALL data_warehouse_control.INSERT_PRICES_FOR_THE_GIOI_DI_DONG(@product_id, v_prices);
+        CALL data_warehouse_control.INSERT_IMAGES_FOR_THE_GIOI_DI_DONG(@product_id, v_images);
+        CALL data_warehouse_control.INSERT_SPECIFICATION_FOR_THE_GIOI_DI_DONG(@product_id, v_specifications);
     END LOOP;
 
     -- Đóng con trỏ
     CLOSE cursor_data;
 
     UPDATE data_warehouse_control.file_logs
-    SET status      = 'DAILY_SUCCESS',
+    SET status      = 'STAGING_DONE',
         date_update = now()
     where file_config_id = 2
-      and date = date;
+      and date = v_date;
 
 END;
 
