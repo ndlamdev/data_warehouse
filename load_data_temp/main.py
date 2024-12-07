@@ -49,6 +49,3 @@ def load_file(ids=None, date=datetime.now()):
                                             "date_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                         },
                                         condition=f"date = DATE('{date.strftime('%Y-%m-%d')}') and file_config_id = {config_id}")
-
-
-load_file()

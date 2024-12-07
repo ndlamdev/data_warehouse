@@ -100,6 +100,6 @@ BEGIN
         os               = os_val,
         chipset          = chipset_val
     WHERE id = product_id_val;
-END //
+END;
 
 DELIMITER ;

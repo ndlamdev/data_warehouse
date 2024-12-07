@@ -91,7 +91,7 @@ BEGIN
         END WHILE;
 
 
-END //
+END;
 
 DELIMITER ;
 

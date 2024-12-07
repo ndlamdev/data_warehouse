@@ -17,7 +17,7 @@ def transform_data(ids=None, date=datetime.now()):
         procedure = config_and_log['fc.procedure_load_data_warehouse']
 
         if log is None or log != "STAGING_DONE":
-            log = read_data_log([config_id], datetime.now())
+            log = read_data_log([config_id], date)
             if log is None:
                 print(f"Don't have any log for file config id {config_id}.")
                 continue
@@ -37,6 +37,3 @@ def transform_data(ids=None, date=datetime.now()):
                                             "date_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                         },
                                         condition=f"date = DATE('{date.strftime('%Y-%m-%d')}') and file_config_id = {config_id}")
-
-
-transform_data()
