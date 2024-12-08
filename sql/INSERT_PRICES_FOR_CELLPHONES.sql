@@ -12,69 +12,84 @@ BEGIN
     DECLARE i INT DEFAULT 0;
     DECLARE n INT DEFAULT - 1;
 
+    -- 1. Thay đổi các ký tự đặc biệt.
     SET data = REPLACE(REPLACE(REPLACE(REPLACE(data, 'NONE', '\'*\''), '"', ''), '"', ''), '\'', '"');
 
+    -- 2. Kiểm tra có phải định dạng json không
     IF JSON_VALID(data) = 1
     THEN
+        -- 2.1 Đêm số phần từ trong mảng json
         SET n = JSON_LENGTH(data);
     END IF;
 
 
-    -- Lặp qua từng phần tử trong dữ liệu JSON
+    -- 3. Lặp qua từng phần tử trong mảng json
     WHILE i < n
         DO
-            SET color_val = JSON_UNQUOTE(JSON_EXTRACT(data, CONCAT('$[', i, '].color')));
-            SET desk_val = JSON_UNQUOTE(JSON_EXTRACT(data, CONCAT('$[', i, '].desk')));
+            -- 3.1 Lấy màu
+            SET color_val = COALESCE(JSON_UNQUOTE(JSON_EXTRACT(data, CONCAT('$[', i, '].color'))), '');
+            -- 3.2 Lấy bộ nhớ
+            SET desk_val = COALESCE(JSON_UNQUOTE(JSON_EXTRACT(data, CONCAT('$[', i, '].desk'))), '');
+            -- 3.3 lấy giá gốc
             SET @price_base_val_temp =
                     REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
                                                             JSON_UNQUOTE(JSON_EXTRACT(data, CONCAT('$[', i, '].price_base'))),
-                                                            'đ', ''),
-                                                    '.',
-                                                    ''), '*', ''), '"', ''), '₫', '');
+                                                            'đ', ''), '.', ''), '*', ''), '"', ''), '₫', '');
+            -- 3.4 Lấy giá giảm
             SET @discount_val_temp =
                     REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
                                                             JSON_UNQUOTE(JSON_EXTRACT(data, CONCAT('$[', i, '].discount'))),
-                                                            'đ', ''),
-                                                    '.',
-                                                    ''), '*', ''), '"', ''), '₫', '');
+                                                            'đ', ''), '.', ''), '*', ''), '"', ''), '₫', '');
+
+            -- 3.5 Lấy trạng thái
             SET status_val = JSON_UNQUOTE(JSON_EXTRACT(data, CONCAT('$[', i, '].status')));
 
+            -- 3.6 Kiểm tra trong màu có số không
             IF color_val REGEXP '[0-9]' THEN
+                -- 3.6.1 Đổi giá trị màu và bộ nhớ
                 SET @temp = desk_val;
                 SET desk_val = color_val;
                 SET color_val = @temp;
             END IF;
 
-            SET color_val = COALESCE(color_val, '');
-            SET desk_val = COALESCE(desk_val, '');
-
+            -- 3.7. Kiểm tra trong giá giảm có số không
             IF @discount_val_temp REGEXP '[0-9]' THEN
+                -- 3.7.1. Ép kiểu dữ liệu thành số
                 SET discount_val = cast(@discount_val_temp as double);
             ELSE
+                -- 3.7.2. Số giá giảm thành 0
                 SET discount_val = 0.0;
             END IF;
 
+            -- 3.8. Kiểm tra trong giá gốc có số không
             IF @price_base_val_temp REGEXP '[0-9]' THEN
+                -- 3.8.1. Ép kiểu dữ liệu thành số
                 SET price_base_val = cast(@price_base_val_temp as double);
             ELSE
+                -- 3.8.2. Số giá giảm thành 0
                 SET price_base_val = 0.0;
             END IF;
 
+            -- 3.9 Kiểm tra giá giảm có lớn hơn giá gốc không
             IF discount_val > price_base_val
             THEN
+                -- 3.9.1 Đổi giá giảm và giá gốc
                 SET @TEMP = price_base_val;
                 SET price_base_val = discount_val;
                 SET discount_val = @TEMP;
             END IF;
 
+            -- 3.10. Kiểm tra giá gốc và trạng thái có bằng 0 và không có trạng thái
             IF price_base_val = 0 AND (status_val is not null OR status_val != '') THEN
+                -- 3.10.1. Set trạng thái thành hết hàng
                 SET status_val = 'Hết hàng';
             ELSE
+                -- 3.10.2. Set trạng thái thành còn hàng
                 SET status_val = 'Còn hàng';
             END IF;
 
 
-            -- Chèn vào bảng prices
+            -- 3.11. Chèn vào bảng prices
             INSERT INTO data_warehouse_staging.product_cellphones_prices_staging (product_id, color, desk, price_base, discount, status)
             VALUES (product_id_val, color_val, desk_val, price_base_val, discount_val,
                     status_val);
