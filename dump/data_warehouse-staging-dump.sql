@@ -17,7 +17,7 @@
 
 DROP DATABASE IF EXISTS `data_warehouse_staging`;
 CREATE DATABASE `data_warehouse_staging`;
-USE `data_warehouse_staging`
+USE `data_warehouse_staging`;
 
 --
 -- Table structure for table `date_dim`

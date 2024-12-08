@@ -15,6 +15,10 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+DROP DATABASE IF EXISTS `data_warehouse_control`;
+CREATE DATABASE `data_warehouse_control`;
+USE `data_warehouse_control`;
+
 --
 -- Table structure for table `crawl_data_product_css_selectors`
 --

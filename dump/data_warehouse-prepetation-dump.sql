@@ -16,9 +16,9 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-DROP DATABASE IF EXISTS `data_warehouse_pre`;
-CREATE DATABASE `data_warehouse_control`;
-USE `data_warehouse_control`
+DROP DATABASE IF EXISTS `data_warehouse_prepetation`;
+CREATE DATABASE `data_warehouse_prepetation`;
+USE `data_warehouse_prepetation`;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
