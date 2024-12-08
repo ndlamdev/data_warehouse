@@ -8,6 +8,7 @@ BEGIN
     DECLARE product_count INT;
     DECLARE v_data_dim_id INT;
 
+    -- 1. Đếm số lượng sản phẩm trùng lập theo nguồn lấy
     SELECT COUNT(*)
     INTO product_count
     FROM (data_warehouse_staging.products_the_gioi_di_dong_staging AS p_t
@@ -40,20 +41,25 @@ BEGIN
       And pr_w.desk = pr_t.desk
       AND img_w.image_url = img_t.image_url;
 
-        IF product_count = 0
+    -- 2. Nếu không không có sản phẩm trùng lập
+    IF product_count = 0
     THEN
+        -- 2.1. Set giá trị kết quả = 1
         SET expired = 1;
 
+        -- 2.2. select id data_dim của ngày hôm nay
         SELECT id
         INTO v_data_dim_id
         FROM data_warehouse_staging.date_dim
         WHERE date = CURDATE();
 
+        -- 2.3. Cập nhật thời gian hết hạn là ngày chạy
         UPDATE data_warehouse_staging.products_warehouse as pw
         SET pw.expired = v_data_dim_id
         WHERE pw.source = source_expired
           AND pw.expired = -1;
     ELSE
+        -- 2.4. Set giá trị kết quả = 0
         SET expired = 0;
     END IF;
 END;
