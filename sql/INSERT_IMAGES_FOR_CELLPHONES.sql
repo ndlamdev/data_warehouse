@@ -2,15 +2,14 @@ DROP PROCEDURE IF EXISTS data_warehouse_control.INSERT_IMAGES_FOR_CELLPHONES;
 
 DELIMITER //
 
-CREATE PROCEDURE data_warehouse_control.INSERT_IMAGES_FOR_CELLPHONES(in product_id_val int, in data date)
+CREATE PROCEDURE data_warehouse_control.INSERT_IMAGES_FOR_CELLPHONES(in product_id_val int, in data text)
 BEGIN
     DECLARE image_val VARCHAR(255) DEFAULT '';
     DECLARE i INT DEFAULT 0;
     DECLARE n INT DEFAULT - 1;
 
-    SET data = REPLACE(REPLACE(REPLACE(data, 'NONE', '\'*\''), 'None', '\'*\''), '"', '');
-    SET data = REPLACE(data, '\'', '"');
-
+    # 1. Thay đổi các ký tự đặc biệt.
+    SET data = REPLACE(REPLACE(REPLACE(data, 'NONE', '\'*\''), '"', ''), '\'', '"');
 
     IF JSON_VALID(data) = 1
     THEN

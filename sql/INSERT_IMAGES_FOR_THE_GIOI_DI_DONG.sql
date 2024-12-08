@@ -8,8 +8,7 @@ BEGIN
     DECLARE i INT DEFAULT 0;
     DECLARE n INT DEFAULT - 1;
 
-    SET data = REPLACE(REPLACE(REPLACE(data, 'NONE', '\'*\''), 'None', '\'*\''), '"', '');
-    SET data = REPLACE(data, '\'', '"');
+    SET data = REPLACE(REPLACE(REPLACE(data, 'NONE', '\'*\''), '"', ''), '\'', '"');
 
 
     IF JSON_VALID(data) = 1

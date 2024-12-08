@@ -12,10 +12,7 @@ BEGIN
     DECLARE i INT DEFAULT 0;
     DECLARE n INT DEFAULT - 1;
 
-    SET data = REPLACE(REPLACE(REPLACE(data, 'NONE', '\'*\''), 'None', '\'*\''), '"', '');
-
-    SET data = REPLACE(data, '"', '');
-    SET data = REPLACE(data, '\'', '"');
+    SET data = REPLACE(REPLACE(REPLACE(REPLACE(data, 'NONE', '\'*\''), '"', ''), '"', ''), '\'', '"');
 
     IF JSON_VALID(data) = 1
     THEN
@@ -74,7 +71,7 @@ BEGIN
             ELSE
                 SET status_val = 'Còn hàng';
             END IF;
-            
+
             -- Chèn vào bảng prices
             INSERT INTO data_warehouse_staging.product_the_gioi_di_dong_prices_staging (product_id, color, desk, price_base, discount, status)
             VALUES (product_id_val, color_val, desk_val, price_base_val, discount_val,
