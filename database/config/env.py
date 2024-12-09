@@ -1,0 +1,12 @@
+from dotenv import load_dotenv
+import os
+
+load_dotenv(override=True)
+
+CONTROLLER_DB_HOST = os.getenv("CONTROLLER_DB_HOST")
+CONTROLLER_DB_PORT = os.getenv("CONTROLLER_DB_PORT")
+CONTROLLER_DB_NAME = os.getenv("CONTROLLER_DB_NAME")
+CONTROLLER_DB_USER = os.getenv("CONTROLLER_DB_USER")
+CONTROLLER_DB_PASS = os.getenv("CONTROLLER_DB_PASS")
+CONTROLLER_DB_POOL_NAME = os.getenv("CONTROLLER_DB_POOL_NAME")
+CONTROLLER_DB_POOL_SIZE = int(os.getenv("CONTROLLER_DB_POOL_SIZE"))
