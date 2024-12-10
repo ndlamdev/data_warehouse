@@ -145,6 +145,7 @@ def crawl_data(ids=None, date=datetime.now()):
     for row in range(configs.shape[0]):  # 2. Duyệt từng dòng dữ liệu của file_config
         config = configs.iloc[row]
         config_id = config['id']
+        name = config['name']
         # 3.Kiểm tra log dự vào file_config_id và ngày
         log = read_data_log(config_ids=[config_id], date=date)
         if not log.empty and log['status'].values[0] != "CRAWL_FAIL":
