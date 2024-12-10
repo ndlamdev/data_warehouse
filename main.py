@@ -1,11 +1,14 @@
 from datetime import datetime
 
+from crawl_data.main import crawl_data
 from load_data_temp.main import load_file
 from process_data.main import load_data_staging
 from transform_data.main import transform_data
 
-dt = datetime(2024, 12, 3)
+dt = datetime.now()
 
+print("="*20, "load file temp", "="*20)
+crawl_data(date=dt)
 print("="*20, "load file temp", "="*20)
 load_file(date=dt)
 print("="*20, "load data_staging", "="*20)

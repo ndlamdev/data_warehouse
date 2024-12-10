@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.40, for Linux (x86_64)
 --
--- Host: 127.0.0.1    Database: data_warehouse_prepetation
+-- Host: 127.0.0.1    Database: data_warehouse_mart
 -- ------------------------------------------------------
 -- Server version	8.0.40-0ubuntu0.24.10.1
 
@@ -16,9 +16,9 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-DROP DATABASE IF EXISTS `data_warehouse_prepetation`;
-CREATE DATABASE `data_warehouse_prepetation`;
-USE `data_warehouse_prepetation`;
+DROP DATABASE IF EXISTS `data_warehouse_mart`;
+CREATE DATABASE `data_warehouse_mart`;
+USE `data_warehouse_mart`;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
